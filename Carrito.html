@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carrito — Sin & Silk</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400;1,500;1,600&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --void:#0D0B0D;
+    --burdeos:#4A0E16;
+    --sin-red:#8B0E1F;
+    --gold:#B7935A;
+    --silk:#EFE7DE;
+    --smoke:#6B4750;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--void); color:var(--silk); font-family:'Jost',sans-serif; font-weight:300; overflow-x:hidden;}
+  .serif{font-family:'Cormorant Garamond',serif;}
+
+  .grain{
+    position:fixed; inset:0; pointer-events:none; z-index:70; opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    position:sticky; top:0; z-index:40;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 5%;
+    background:rgba(13,11,13,.92);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(183,147,90,.15);
+  }
+  .logo{
+    font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:500;
+    font-size:1.5rem; letter-spacing:.03em; color:var(--silk); text-decoration:none;
+    display:flex; align-items:baseline; gap:6px;
+  }
+  .logo .amp{color:var(--gold); font-size:1.8rem; font-style:italic;}
+  nav ul{display:flex; list-style:none; gap:36px;}
+  nav a{
+    color:var(--silk); text-decoration:none; font-size:.72rem; letter-spacing:.18em;
+    text-transform:uppercase; opacity:.85; padding-bottom:4px; position:relative;
+  }
+  nav a::after{content:'';position:absolute;left:0;bottom:0;width:0;height:1px;background:var(--gold);transition:width .35s ease;}
+  nav a:hover{opacity:1;} nav a:hover::after{width:100%;}
+  .icons{display:flex; gap:22px; align-items:center;}
+  .icons button{background:none;border:none;color:var(--silk);cursor:pointer;opacity:.85;position:relative;}
+  .icons button:hover{opacity:1;}
+  .icons button.cart-active{opacity:1; color:var(--gold);}
+  .cart-count{
+    position:absolute; top:-8px; right:-10px; background:var(--sin-red); color:var(--silk);
+    font-size:.6rem; width:16px; height:16px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .menu-toggle{display:none;}
+
+  /* ---------- Page hero (empty state context) ---------- */
+  .page-hero{
+    padding:56px 5% 20px;
+  }
+  .breadcrumb{font-size:.72rem; color:var(--smoke); margin-bottom:18px;}
+  .breadcrumb a{color:var(--smoke); text-decoration:none;}
+  .breadcrumb a:hover{color:var(--gold);}
+  .breadcrumb .sep{margin:0 8px; opacity:.5;}
+  .breadcrumb .current{color:rgba(239,231,222,.7);}
+  .page-hero h1{
+    font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:400;
+    font-size:clamp(2.2rem, 4vw, 3rem);
+  }
+
+  /* ---------- Cart layout (inline, full page version) ---------- */
+  .cart-layout{
+    display:grid;
+    grid-template-columns:1fr 380px;
+    gap:64px;
+    padding:40px 5% 120px;
+    align-items:flex-start;
+  }
+
+  .cart-items{border-top:1px solid rgba(183,147,90,.15);}
+
+  .cart-item{
+    display:grid;
+    grid-template-columns:110px 1fr auto;
+    gap:24px;
+    padding:28px 0;
+    border-bottom:1px solid rgba(183,147,90,.15);
+    align-items:center;
+  }
+
+  .cart-item-media{
+    aspect-ratio:3/4;
+    background:linear-gradient(155deg, #211014 0%, #0D0B0D 70%);
+    position:relative;
+    overflow:hidden;
+  }
+  .cart-item-media::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 30%, rgba(139,14,31,.16), transparent 65%);}
+
+  .cart-item-info .p-cat{
+    font-size:.6rem; letter-spacing:.16em; text-transform:uppercase; color:var(--smoke); margin-bottom:6px;
+  }
+  .cart-item-info h4{
+    font-family:'Cormorant Garamond',serif; font-weight:500; font-size:1.15rem; margin-bottom:8px;
+  }
+  .cart-item-meta{
+    display:flex; gap:16px; font-size:.78rem; color:rgba(239,231,222,.55); margin-bottom:14px;
+  }
+
+  .cart-item-actions{
+    display:flex; align-items:center; gap:20px;
+  }
+
+  .qty-selector{
+    display:flex; align-items:center;
+    border:1px solid rgba(239,231,222,.3);
+  }
+  .qty-selector button{
+    width:34px; height:38px; background:none; border:none; color:var(--silk);
+    font-size:.95rem; cursor:pointer; transition:color .3s ease;
+  }
+  .qty-selector button:hover{color:var(--gold);}
+  .qty-selector span{width:28px; text-align:center; font-size:.85rem;}
+
+  .remove-link{
+    background:none; border:none; color:rgba(239,231,222,.5);
+    font-size:.72rem; letter-spacing:.05em; text-decoration:underline; text-underline-offset:3px;
+    cursor:pointer; transition:color .3s ease;
+    display:flex; align-items:center; gap:6px;
+  }
+  .remove-link:hover{color:var(--sin-red);}
+
+  .cart-item-price{
+    text-align:right;
+  }
+  .cart-item-price .now{font-family:'Cormorant Garamond',serif; font-size:1.2rem; color:var(--silk);}
+  .cart-item-price .old{display:block; font-size:.75rem; color:var(--smoke); text-decoration:line-through; margin-top:4px;}
+
+  .continue-shopping{
+    display:inline-flex; align-items:center; gap:10px;
+    margin-top:30px;
+    color:var(--gold); text-decoration:none;
+    font-size:.75rem; letter-spacing:.12em; text-transform:uppercase;
+  }
+
+  /* ---------- Saved for later ---------- */
+  .saved-section{margin-top:70px;}
+  .saved-section h3{
+    font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:400;
+    font-size:1.5rem; margin-bottom:24px;
+  }
+  .saved-grid{display:grid; grid-template-columns:repeat(3, 1fr); gap:24px;}
+  .saved-card{cursor:pointer;}
+  .saved-media{
+    aspect-ratio:3/4; background:linear-gradient(155deg, #1c0e13 0%, #0D0B0D 70%);
+    margin-bottom:12px; position:relative;
+  }
+  .saved-media::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 30%, rgba(139,14,31,.14), transparent 65%);}
+  .saved-card h5{font-family:'Cormorant Garamond',serif; font-size:.95rem; margin-bottom:4px;}
+  .saved-card .price{font-size:.8rem; color:var(--smoke);}
+  .btn-move-cart{
+    margin-top:8px; background:none; border:none; color:var(--gold);
+    font-size:.68rem; letter-spacing:.08em; text-decoration:underline; text-underline-offset:3px;
+    cursor:pointer;
+  }
+
+  /* ---------- Summary ---------- */
+  .summary{
+    position:sticky; top:100px;
+    background:rgba(183,147,90,.04);
+    border:1px solid rgba(183,147,90,.18);
+    padding:34px;
+  }
+
+  .summary h3{
+    font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:400;
+    font-size:1.4rem; margin-bottom:26px;
+  }
+
+  .promo-row{
+    display:flex; gap:10px; margin-bottom:26px;
+  }
+  .promo-row input{
+    flex:1; background:none; border:1px solid rgba(239,231,222,.3); color:var(--silk);
+    padding:12px 14px; font-family:'Jost',sans-serif; font-size:.8rem; outline:none;
+  }
+  .promo-row input::placeholder{color:rgba(239,231,222,.4);}
+  .promo-row button{
+    background:none; border:1px solid var(--gold); color:var(--gold);
+    padding:0 18px; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; cursor:pointer;
+    transition:background .3s ease, color .3s ease;
+  }
+  .promo-row button:hover{background:var(--gold); color:var(--void);}
+
+  .promo-applied{
+    display:none;
+    align-items:center; justify-content:space-between;
+    background:rgba(183,147,90,.12); border:1px solid rgba(183,147,90,.3);
+    padding:10px 14px; margin-bottom:26px;
+    font-size:.75rem; color:var(--gold);
+  }
+  .promo-applied.show{display:flex;}
+  .promo-applied button{background:none; border:none; color:var(--gold); cursor:pointer;}
+
+  .summary-row{
+    display:flex; justify-content:space-between;
+    font-size:.85rem; color:rgba(239,231,222,.7);
+    margin-bottom:16px;
+  }
+  .summary-row.discount{color:var(--gold);}
+
+  .summary-divider{height:1px; background:rgba(183,147,90,.2); margin:20px 0;}
+
+  .summary-total{
+    display:flex; justify-content:space-between; align-items:baseline;
+    margin-bottom:30px;
+  }
+  .summary-total .label{font-size:.85rem; letter-spacing:.08em; text-transform:uppercase; color:var(--silk);}
+  .summary-total .amount{font-family:'Cormorant Garamond',serif; font-size:1.8rem; color:var(--silk);}
+
+  .btn-checkout{
+    width:100%;
+    background:var(--sin-red); border:1px solid var(--sin-red); color:var(--silk);
+    font-size:.78rem; letter-spacing:.16em; text-transform:uppercase;
+    padding:18px 0; cursor:pointer; margin-bottom:16px;
+    transition:all .4s ease;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+  }
+  .btn-checkout:hover{background:transparent; border-color:var(--gold);}
+
+  .secure-note{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    font-size:.72rem; color:rgba(239,231,222,.5); margin-bottom:24px;
+  }
+
+  .payment-icons{display:flex; gap:8px; justify-content:center;}
+  .payment-icons span{
+    border:1px solid rgba(239,231,222,.2); color:rgba(239,231,222,.45);
+    font-size:.58rem; letter-spacing:.04em; padding:4px 8px;
+  }
+
+  /* ---------- Empty cart state ---------- */
+  .empty-cart{
+    text-align:center;
+    padding:100px 5%;
+    display:none;
+  }
+  .empty-cart.show{display:block;}
+  .empty-cart svg{color:var(--smoke); margin-bottom:24px;}
+  .empty-cart h2{
+    font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:400;
+    font-size:2rem; margin-bottom:14px;
+  }
+  .empty-cart p{color:rgba(239,231,222,.55); font-size:.9rem; margin-bottom:34px;}
+  .btn-primary-empty{
+    background:var(--sin-red); border:1px solid var(--sin-red); color:var(--silk);
+    padding:16px 38px; font-size:.75rem; letter-spacing:.16em; text-transform:uppercase;
+    cursor:pointer; transition:all .4s ease; text-decoration:none; display:inline-block;
+  }
+  .btn-primary-empty:hover{background:transparent; border-color:var(--gold);}
+
+  /* ================================================= */
+  /* ---------- CART DRAWER (side panel demo) --------- */
+  /* ================================================= */
+  .drawer-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:80;
+    opacity:0; pointer-events:none; transition:opacity .4s ease;
+  }
+  .drawer-overlay.open{opacity:1; pointer-events:auto;}
+
+  .cart-drawer{
+    position:fixed; top:0; right:0; bottom:0;
+    width:440px; max-width:92vw;
+    background:var(--void);
+    border-left:1px solid rgba(183,147,90,.2);
+    z-index:81;
+    transform:translateX(100%);
+    transition:transform .45s cubic-bezier(.16,1,.3,1);
+    display:flex; flex-direction:column;
+  }
+  .cart-drawer.open{transform:translateX(0);}
+
+  .drawer-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:26px 28px;
+    border-bottom:1px solid rgba(183,147,90,.15);
+  }
+  .drawer-header h3{
+    font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:400; font-size:1.3rem;
+  }
+  .drawer-header button{background:none; border:none; color:var(--silk); font-size:1.3rem; cursor:pointer;}
+
+  .drawer-body{
+    flex:1; overflow-y:auto; padding:10px 28px;
+  }
+
+  .drawer-item{
+    display:grid; grid-template-columns:72px 1fr auto;
+    gap:16px; padding:20px 0; border-bottom:1px solid rgba(183,147,90,.1);
+    align-items:center;
+  }
+  .drawer-item-media{
+    aspect-ratio:3/4; background:linear-gradient(155deg, #211014 0%, #0D0B0D 70%); position:relative; overflow:hidden;
+  }
+  .drawer-item-media::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 30%, rgba(139,14,31,.16), transparent 65%);}
+  .drawer-item h5{font-family:'Cormorant Garamond',serif; font-size:.95rem; margin-bottom:5px;}
+  .drawer-item .meta{font-size:.72rem; color:var(--smoke); margin-bottom:8px;}
+  .drawer-item .price{font-size:.8rem; color:var(--silk);}
+
+  .drawer-footer{
+    padding:24px 28px 30px;
+    border-top:1px solid rgba(183,147,90,.15);
+  }
+  .drawer-subtotal{
+    display:flex; justify-content:space-between; margin-bottom:18px;
+    font-size:.85rem; color:rgba(239,231,222,.75);
+  }
+  .drawer-subtotal .amount{font-family:'Cormorant Garamond',serif; font-size:1.3rem; color:var(--silk);}
+
+  .open-drawer-btn{
+    position:fixed; bottom:28px; right:28px; z-index:30;
+    background:var(--gold); color:var(--void); border:none;
+    padding:14px 22px; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase;
+    cursor:pointer; display:flex; align-items:center; gap:8px;
+  }
+
+  footer{padding:70px 5% 30px; background:var(--void); text-align:center; border-top:1px solid rgba(183,147,90,.12);}
+  footer p{color:rgba(239,231,222,.4); font-size:.72rem;}
+
+  /* ---------- Mobile ---------- */
+  @media (max-width: 900px){
+    nav ul, .icons .search-btn{display:none;}
+    .menu-toggle{display:block; background:none; border:none; color:var(--silk); cursor:pointer;}
+    .cart-layout{grid-template-columns:1fr; padding:24px 6% 80px; gap:40px;}
+    .summary{position:static;}
+    .cart-item{grid-template-columns:80px 1fr; }
+    .cart-item-price{grid-column:1/-1; text-align:left; margin-top:8px;}
+    .saved-grid{grid-template-columns:repeat(2, 1fr);}
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<!-- HEADER -->
+<header>
+  <a href="index.html" class="logo">Sin <span class="amp">&</span> Silk</a>
+  <nav>
+    <ul>
+      <li><a href="index.html">Novedades</a></li>
+      <li><a href="catalogo.html">Ropa</a></li>
+      <li><a href="catalogo.html">Zapatos</a></li>
+      <li><a href="catalogo.html">Accesorios</a></li>
+      <li><a href="catalogo.html">Colección</a></li>
+    </ul>
+  </nav>
+  <div class="icons">
+    <button class="search-btn" aria-label="Buscar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+    <button aria-label="Cuenta">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </button>
+    <button aria-label="Favoritos">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+    </button>
+    <button aria-label="Carrito" class="cart-active" onclick="openDrawer()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <span class="cart-count" id="drawerCount">3</span>
+    </button>
+    <button class="menu-toggle" aria-label="Menú">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="breadcrumb">
+    <a href="index.html">Inicio</a><span class="sep">/</span><span class="current">Carrito</span>
+  </div>
+  <h1>Tu carrito</h1>
+</div>
+
+<!-- CART LAYOUT (full page, populated state) -->
+<div class="cart-layout" id="cartFull">
+  <div>
+    <div class="cart-items" id="cartItemsList">
+
+      <div class="cart-item">
+        <div class="cart-item-media"></div>
+        <div class="cart-item-info">
+          <div class="p-cat">Vestidos</div>
+          <h4>Vestido Midnight Slit</h4>
+          <div class="cart-item-meta">
+            <span>Talla: S</span>
+            <span>Color: Negro</span>
+          </div>
+          <div class="cart-item-actions">
+            <div class="qty-selector">
+              <button>−</button><span>1</span><button>+</button>
+            </div>
+            <button class="remove-link">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Eliminar
+            </button>
+          </div>
+        </div>
+        <div class="cart-item-price">
+          <span class="now">89€</span>
+          <span class="old">112€</span>
+        </div>
+      </div>
+
+      <div class="cart-item">
+        <div class="cart-item-media"></div>
+        <div class="cart-item-info">
+          <div class="p-cat">Zapatos</div>
+          <h4>Botines Sin Heel</h4>
+          <div class="cart-item-meta">
+            <span>Talla: 38</span>
+            <span>Color: Burdeos</span>
+          </div>
+          <div class="cart-item-actions">
+            <div class="qty-selector">
+              <button>−</button><span>1</span><button>+</button>
+            </div>
+            <button class="remove-link">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Eliminar
+            </button>
+          </div>
+        </div>
+        <div class="cart-item-price">
+          <span class="now">76€</span>
+        </div>
+      </div>
+
+      <div class="cart-item">
+        <div class="cart-item-media"></div>
+        <div class="cart-item-info">
+          <div class="p-cat">Joyería</div>
+          <h4>Gargantilla Rouge Ronce</h4>
+          <div class="cart-item-meta">
+            <span>Color: Dorado</span>
+          </div>
+          <div class="cart-item-actions">
+            <div class="qty-selector">
+              <button>−</button><span>2</span><button>+</button>
+            </div>
+            <button class="remove-link">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Eliminar
+            </button>
+          </div>
+        </div>
+        <div class="cart-item-price">
+          <span class="now">84€</span>
+        </div>
+      </div>
+
+    </div>
+
+    <a href="catalogo.html" class="continue-shopping">
+      ← Seguir comprando
+    </a>
+
+    <!-- SAVED FOR LATER -->
+    <div class="saved-section">
+      <h3>Guardado para más tarde</h3>
+      <div class="saved-grid">
+        <div class="saved-card">
+          <div class="saved-media"></div>
+          <h5>Clutch Belladonna</h5>
+          <div class="price">58€</div>
+          <button class="btn-move-cart">Mover al carrito</button>
+        </div>
+        <div class="saved-card">
+          <div class="saved-media"></div>
+          <h5>Guantes Velvet Sin</h5>
+          <div class="price">34€</div>
+          <button class="btn-move-cart">Mover al carrito</button>
+        </div>
+        <div class="saved-card">
+          <div class="saved-media"></div>
+          <h5>Blazer Noir Structuré</h5>
+          <div class="price">124€</div>
+          <button class="btn-move-cart">Mover al carrito</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary">
+    <h3>Resumen del pedido</h3>
+
+    <div class="promo-row" id="promoForm">
+      <input type="text" placeholder="Código de descuento" id="promoInput">
+      <button onclick="applyPromo()">Aplicar</button>
+    </div>
+    <div class="promo-applied" id="promoApplied">
+      <span>✓ SINSILK10 aplicado</span>
+      <button onclick="removePromo()">✕</button>
+    </div>
+
+    <div class="summary-row">
+      <span>Subtotal (4 artículos)</span>
+      <span>249€</span>
+    </div>
+    <div class="summary-row discount" id="discountRow" style="display:none;">
+      <span>Descuento (SINSILK10)</span>
+      <span>−25€</span>
+    </div>
+    <div class="summary-row">
+      <span>Envío</span>
+      <span>Gratis</span>
+    </div>
+
+    <div class="summary-divider"></div>
+
+    <div class="summary-total">
+      <span class="label">Total</span>
+      <span class="amount" id="totalAmount">249€</span>
+    </div>
+
+    <button class="btn-checkout" onclick="location.href='checkout.html'">
+      Finalizar compra
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </button>
+
+    <div class="secure-note">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>
+      Pago seguro y encriptado
+    </div>
+
+    <div class="payment-icons">
+      <span>VISA</span><span>MASTERCARD</span><span>PAYPAL</span><span>APPLE PAY</span>
+    </div>
+  </div>
+</div>
+
+<!-- EMPTY STATE (toggle for demo) -->
+<div class="empty-cart" id="cartEmpty">
+  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+  <h2>Tu carrito está vacío</h2>
+  <p>Aún no hay nada aquí. Deja que la tentación te guíe.</p>
+  <a href="catalogo.html" class="btn-primary-empty">Explorar la colección</a>
+</div>
+
+<footer>
+  <p>© 2026 Sin & Silk. Todos los derechos reservados.</p>
+</footer>
+
+<!-- ============ CART DRAWER (side panel) ============ -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="drawer-header">
+    <h3>Tu carrito (3)</h3>
+    <button onclick="closeDrawer()" aria-label="Cerrar">✕</button>
+  </div>
+  <div class="drawer-body">
+    <div class="drawer-item">
+      <div class="drawer-item-media"></div>
+      <div>
+        <h5>Vestido Midnight Slit</h5>
+        <div class="meta">Talla S · Negro · Cant. 1</div>
+        <div class="price">89€</div>
+      </div>
+    </div>
+    <div class="drawer-item">
+      <div class="drawer-item-media"></div>
+      <div>
+        <h5>Botines Sin Heel</h5>
+        <div class="meta">Talla 38 · Burdeos · Cant. 1</div>
+        <div class="price">76€</div>
+      </div>
+    </div>
+    <div class="drawer-item">
+      <div class="drawer-item-media"></div>
+      <div>
+        <h5>Gargantilla Rouge Ronce</h5>
+        <div class="meta">Dorado · Cant. 2</div>
+        <div class="price">84€</div>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-footer">
+    <div class="drawer-subtotal">
+      <span>Subtotal</span>
+      <span class="amount">249€</span>
+    </div>
+    <button class="btn-checkout" onclick="location.href='checkout.html'">Finalizar compra</button>
+    <a href="carrito.html" class="continue-shopping" style="justify-content:center; width:100%; margin-top:6px;" onclick="closeDrawer()">Ver carrito completo</a>
+  </div>
+</div>
+
+<!-- Demo trigger to preview the drawer without leaving this page -->
+<button class="open-drawer-btn" onclick="openDrawer()">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+  Ver drawer
+</button>
+
+<script>
+  function openDrawer(){
+    document.getElementById('cartDrawer').classList.add('open');
+    document.getElementById('drawerOverlay').classList.add('open');
+  }
+  function closeDrawer(){
+    document.getElementById('cartDrawer').classList.remove('open');
+    document.getElementById('drawerOverlay').classList.remove('open');
+  }
+
+  // Quantity buttons (full page)
+  document.querySelectorAll('.qty-selector').forEach(sel => {
+    const [minus, span, plus] = [sel.children[0], sel.children[1], sel.children[2]];
+    let val = parseInt(span.textContent);
+    minus.addEventListener('click', () => { val = Math.max(1, val-1); span.textContent = val; });
+    plus.addEventListener('click', () => { val += 1; span.textContent = val; });
+  });
+
+  // Remove item (with fade out)
+  document.querySelectorAll('.remove-link').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = btn.closest('.cart-item');
+      item.style.transition = 'opacity .3s ease, transform .3s ease';
+      item.style.opacity = '0';
+      item.style.transform = 'translateX(20px)';
+      setTimeout(() => item.remove(), 300);
+    });
+  });
+
+  // Promo code
+  function applyPromo(){
+    const input = document.getElementById('promoInput');
+    if(input.value.trim() === '') return;
+    document.getElementById('promoForm').style.display = 'none';
+    document.getElementById('promoApplied').classList.add('show');
+    document.getElementById('discountRow').style.display = 'flex';
+    document.getElementById('totalAmount').textContent = '224€';
+  }
+  function removePromo(){
+    document.getElementById('promoForm').style.display = 'flex';
+    document.getElementById('promoApplied').classList.remove('show');
+    document.getElementById('discountRow').style.display = 'none';
+    document.getElementById('totalAmount').textContent = '249€';
+    document.getElementById('promoInput').value = '';
+  }
+
+  // Move to cart (saved for later)
+  document.querySelectorAll('.btn-move-cart').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.textContent = 'Añadido ✓';
+      setTimeout(() => { btn.closest('.saved-card').style.opacity = '.4'; }, 600);
+    });
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tienda — Sin & Silk</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400;1,500;1,600&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --void:#0D0B0D;
+    --burdeos:#4A0E16;
+    --sin-red:#8B0E1F;
+    --gold:#B7935A;
+    --silk:#EFE7DE;
+    --smoke:#6B4750;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--void); color:var(--silk); font-family:'Jost',sans-serif; font-weight:300; overflow-x:hidden;}
+  .serif{font-family:'Cormorant Garamond',serif;}
+
+  .grain{
+    position:fixed; inset:0; pointer-events:none; z-index:50; opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay;
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    position:sticky; top:0; z-index:40;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 5%;
+    background:rgba(13,11,13,.92);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(183,147,90,.15);
+  }
+  .logo{
+    font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:500;
+    font-size:1.5rem; letter-spacing:.03em; color:var(--silk); text-decoration:none;
+    display:flex; align-items:baseline; gap:6px;
+  }
+  .logo .amp{color:var(--gold); font-size:1.8rem; font-style:italic;}
+  nav ul{display:flex; list-style:none; gap:36px;}
+  nav a{
+    color:var(--silk); text-decoration:none; font-size:.72rem; letter-spacing:.18em;
+    text-transform:uppercase; opacity:.85; padding-bottom:4px; position:relative;
+  }
+  nav a::after{content:'';position:absolute;left:0;bottom:0;width:0;height:1px;background:var(--gold);transition:width .35s ease;}
+  nav a:hover{opacity:1;} nav a:hover::after{width:100%;}
+  nav a.active{opacity:1;}
+  nav a.active::after{width:100%;}
+  .icons{display:flex; gap:22px; align-items:center;}
+  .icons button{background:none;border:none;color:var(--silk);cursor:pointer;opacity:.85;position:relative;}
+  .icons button:hover{opacity:1;}
+  .cart-count{
+    position:absolute; top:-8px; right:-10px; background:var(--sin-red); color:var(--silk);
+    font-size:.6rem; width:16px; height:16px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .menu-toggle{display:none;}
+
+  /* ---------- Shop header ---------- */
+  .shop-hero{
+    padding:56px 5% 40px;
+    border-bottom:1px solid rgba(183,147,90,.12);
+  }
+  .breadcrumb{font-size:.72rem; color:var(--smoke); margin-bottom:18px;}
+  .breadcrumb a{color:var(--smoke); text-decoration:none;}
+  .breadcrumb a:hover{color:var(--gold);}
+  .breadcrumb .sep{margin:0 8px; opacity:.5;}
+  .breadcrumb .current{color:rgba(239,231,222,.7);}
+
+  .shop-hero h1{
+    font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:400;
+    font-size:clamp(2.4rem, 4.5vw, 3.6rem);
+    margin-bottom:12px;
+  }
+  .shop-hero p{color:rgba(239,231,222,.55); font-size:.9rem; max-width:520px;}
+
+  /* ---------- Layout ---------- */
+  .shop-layout{
+    display:grid;
+    grid-template-columns:260px 1fr;
+    gap:56px;
+    padding:48px 5% 120px;
+    align-items:flex-start;
+  }
+
+  /* ---------- Sidebar filters ---------- */
+  .sidebar{
+    position:sticky;
+    top:100px;
+  }
+
+  .filter-group{
+    border-bottom:1px solid rgba(183,147,90,.15);
+    padding-bottom:26px;
+    margin-bottom:26px;
+  }
+
+  .filter-group:last-child{border-bottom:none;}
+
+  .filter-title{
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:.72rem; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--silk); margin-bottom:18px; cursor:pointer;
+  }
+  .filter-title .icon-minus{color:var(--gold); font-size:1rem; transition:transform .3s ease;}
+  .filter-group.collapsed .icon-minus{transform:rotate(-90deg);}
+  .filter-group.collapsed .filter-body{max-height:0; opacity:0;}
+  .filter-body{max-height:400px; opacity:1; overflow:hidden; transition:max-height .35s ease, opacity .3s ease;}
+
+  .filter-option{
+    display:flex; align-items:center; gap:11px;
+    font-size:.83rem; color:rgba(239,231,222,.7);
+    margin-bottom:13px; cursor:pointer;
+    transition:color .3s ease;
+  }
+  .filter-option:hover{color:var(--silk);}
+
+  .checkbox{
+    width:16px; height:16px;
+    border:1px solid rgba(239,231,222,.4);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+    transition:border-color .3s ease, background .3s ease;
+  }
+  .filter-option input{display:none;}
+  .filter-option input:checked + .checkbox{background:var(--gold); border-color:var(--gold);}
+  .filter-option input:checked + .checkbox::after{content:'✓'; font-size:.6rem; color:var(--void);}
+  .filter-option .count{margin-left:auto; color:var(--smoke); font-size:.72rem;}
+
+  .price-range{
+    display:flex; align-items:center; gap:10px; margin-bottom:8px;
+  }
+  .price-range input[type=range]{
+    width:100%;
+    accent-color:var(--gold);
+  }
+  .price-values{
+    display:flex; justify-content:space-between;
+    font-size:.75rem; color:rgba(239,231,222,.6);
+  }
+
+  .size-grid{display:flex; flex-wrap:wrap; gap:8px;}
+  .size-chip{
+    padding:8px 13px; border:1px solid rgba(239,231,222,.3);
+    font-size:.72rem; color:var(--silk); cursor:pointer;
+    transition:border-color .3s ease, background .3s ease, color .3s ease;
+  }
+  .size-chip:hover{border-color:var(--gold);}
+  .size-chip.selected{background:var(--gold); border-color:var(--gold); color:var(--void);}
+
+  .color-grid{display:flex; flex-wrap:wrap; gap:12px;}
+  .color-dot{
+    width:26px; height:26px; border-radius:50%; cursor:pointer;
+    border:2px solid transparent; transition:border-color .3s ease;
+  }
+  .color-dot.selected{border-color:var(--gold);}
+
+  .btn-clear-filters{
+    background:none; border:none; color:var(--gold);
+    font-size:.72rem; letter-spacing:.1em; text-transform:uppercase;
+    text-decoration:underline; text-underline-offset:3px;
+    cursor:pointer; margin-top:6px;
+  }
+
+  /* ---------- Toolbar ---------- */
+  .toolbar{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:36px; flex-wrap:wrap; gap:16px;
+  }
+
+  .results-count{font-size:.82rem; color:rgba(239,231,222,.55);}
+
+  .active-filters{
+    display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;
+  }
+  .active-chip{
+    display:flex; align-items:center; gap:8px;
+    background:rgba(183,147,90,.12); border:1px solid rgba(183,147,90,.3);
+    color:var(--gold); font-size:.7rem; letter-spacing:.05em;
+    padding:6px 10px 6px 12px;
+  }
+  .active-chip button{background:none; border:none; color:var(--gold); cursor:pointer; font-size:.85rem;}
+
+  .sort-select{
+    display:flex; align-items:center; gap:10px;
+    font-size:.75rem; letter-spacing:.1em; text-transform:uppercase; color:rgba(239,231,222,.7);
+  }
+  .sort-select select{
+    background:var(--void); color:var(--silk); border:1px solid rgba(239,231,222,.3);
+    padding:9px 14px; font-family:'Jost',sans-serif; font-size:.78rem;
+    cursor:pointer; outline:none;
+  }
+
+  /* ---------- Product grid ---------- */
+  .product-grid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:32px 28px;
+  }
+
+  .product-card{cursor:pointer;}
+
+  .product-media{
+    position:relative; aspect-ratio:3/4;
+    background:linear-gradient(155deg, #211014 0%, #0D0B0D 70%);
+    overflow:hidden; margin-bottom:16px;
+  }
+  .product-media::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 30%, rgba(139,14,31,.16), transparent 65%);}
+
+  .product-card:nth-child(4n+1) .product-media{background:linear-gradient(155deg,#24121a 0%,#0D0B0D 70%);}
+  .product-card:nth-child(4n+2) .product-media{background:linear-gradient(155deg,#1c0e13 0%,#0D0B0D 70%);}
+  .product-card:nth-child(4n+3) .product-media{background:linear-gradient(155deg,#2a0e14 0%,#0D0B0D 70%);}
+  .product-card:nth-child(4n+4) .product-media{background:linear-gradient(155deg,#180a0e 0%,#0D0B0D 70%);}
+
+  .product-tag{
+    position:absolute; top:12px; left:12px; z-index:2;
+    background:var(--sin-red); color:var(--silk);
+    font-size:.58rem; letter-spacing:.12em; text-transform:uppercase; padding:5px 9px;
+  }
+  .product-tag.gold{background:var(--gold); color:var(--void);}
+  .product-tag.outline{background:transparent; border:1px solid rgba(239,231,222,.5); color:var(--silk);}
+  .product-tag.sold-out{background:var(--void); border:1px solid var(--smoke); color:var(--smoke);}
+
+  .fav-btn{
+    position:absolute; top:10px; right:10px; z-index:2;
+    background:rgba(13,11,13,.5); border:1px solid rgba(239,231,222,.25);
+    width:30px; height:30px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; color:var(--silk);
+    cursor:pointer; opacity:0; transform:translateY(-4px);
+    transition:opacity .3s ease, transform .3s ease, border-color .3s ease;
+  }
+  .product-card:hover .fav-btn{opacity:1; transform:translateY(0);}
+  .fav-btn:hover{border-color:var(--gold); color:var(--gold);}
+  .fav-btn.active{opacity:1; color:var(--sin-red); border-color:var(--sin-red);}
+
+  .quick-add{
+    position:absolute; left:0; right:0; bottom:0; z-index:2;
+    background:rgba(13,11,13,.88); backdrop-filter:blur(4px);
+    color:var(--silk); text-align:center; padding:12px 0;
+    font-size:.65rem; letter-spacing:.14em; text-transform:uppercase;
+    border-top:1px solid rgba(183,147,90,.25);
+    transform:translateY(100%); transition:transform .35s ease;
+  }
+  .product-card:hover .quick-add{transform:translateY(0);}
+  .product-card.sold-out .quick-add{display:none;}
+  .product-card.sold-out .product-media{opacity:.5;}
+
+  .product-info .p-cat{font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--smoke);margin-bottom:5px;}
+  .product-info h4{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:1.05rem;color:var(--silk);margin-bottom:7px;}
+  .price-row{display:flex; align-items:center; gap:9px; font-size:.82rem;}
+  .price{color:var(--silk);}
+  .price-old{color:var(--smoke); text-decoration:line-through; font-size:.75rem;}
+
+  /* ---------- Pagination ---------- */
+  .pagination{
+    display:flex; justify-content:center; align-items:center; gap:14px;
+    margin-top:70px;
+  }
+  .page-btn{
+    width:38px; height:38px;
+    display:flex; align-items:center; justify-content:center;
+    background:none; border:1px solid rgba(239,231,222,.25);
+    color:rgba(239,231,222,.7); font-size:.8rem; cursor:pointer;
+    transition:border-color .3s ease, color .3s ease, background .3s ease;
+  }
+  .page-btn:hover{border-color:var(--gold); color:var(--gold);}
+  .page-btn.active{background:var(--gold); border-color:var(--gold); color:var(--void);}
+  .page-arrow{border:none; background:none; color:var(--silk); cursor:pointer;}
+  .page-arrow:hover{color:var(--gold);}
+
+  footer{padding:70px 5% 30px; background:var(--void); text-align:center; border-top:1px solid rgba(183,147,90,.12);}
+  footer p{color:rgba(239,231,222,.4); font-size:.72rem;}
+
+  /* ---------- Mobile ---------- */
+  .filter-toggle-mobile{display:none;}
+
+  @media (max-width: 960px){
+    nav ul, .icons .search-btn{display:none;}
+    .menu-toggle{display:block; background:none; border:none; color:var(--silk); cursor:pointer;}
+
+    .shop-layout{grid-template-columns:1fr; padding:32px 6% 80px;}
+    .sidebar{
+      position:fixed; top:0; left:0; bottom:0; width:82%; max-width:320px;
+      background:var(--void); z-index:60; padding:28px; overflow-y:auto;
+      transform:translateX(-100%); transition:transform .4s ease;
+      border-right:1px solid rgba(183,147,90,.15);
+    }
+    .sidebar.open{transform:translateX(0);}
+    .filter-toggle-mobile{
+      display:flex; align-items:center; gap:10px;
+      background:none; border:1px solid rgba(239,231,222,.3); color:var(--silk);
+      padding:11px 18px; font-size:.75rem; letter-spacing:.1em; text-transform:uppercase;
+      cursor:pointer; margin-bottom:26px;
+    }
+    .sidebar-close{
+      display:flex; justify-content:flex-end; margin-bottom:20px;
+    }
+    .sidebar-close button{background:none;border:none;color:var(--silk);font-size:1.4rem;cursor:pointer;}
+    .sidebar-overlay{
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:55;
+    }
+    .sidebar-overlay.open{display:block;}
+
+    .product-grid{grid-template-columns:repeat(2, 1fr); gap:22px 18px;}
+  }
+
+  @media (min-width:961px){
+    .sidebar-close, .sidebar-overlay{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<!-- HEADER -->
+<header>
+  <a href="index.html" class="logo">Sin <span class="amp">&</span> Silk</a>
+  <nav>
+    <ul>
+      <li><a href="index.html">Novedades</a></li>
+      <li><a href="catalogo.html" class="active">Ropa</a></li>
+      <li><a href="catalogo.html">Zapatos</a></li>
+      <li><a href="catalogo.html">Accesorios</a></li>
+      <li><a href="catalogo.html">Colección</a></li>
+    </ul>
+  </nav>
+  <div class="icons">
+    <button class="search-btn" aria-label="Buscar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+    <button aria-label="Cuenta">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </button>
+    <button aria-label="Favoritos">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+    </button>
+    <button aria-label="Carrito">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <span class="cart-count">2</span>
+    </button>
+    <button class="menu-toggle" aria-label="Menú">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- SHOP HERO -->
+<div class="shop-hero">
+  <div class="breadcrumb">
+    <a href="index.html">Inicio</a><span class="sep">/</span><span class="current">Tienda</span>
+  </div>
+  <h1>Toda la colección</h1>
+  <p>Ropa, zapatos, accesorios y joyería para quienes visten la noche como una segunda piel.</p>
+</div>
+
+<!-- LAYOUT -->
+<div class="shop-layout">
+
+  <!-- OVERLAY (mobile) -->
+  <div class="sidebar-overlay" id="overlay"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-close">
+      <button onclick="closeSidebar()" aria-label="Cerrar filtros">✕</button>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-title" onclick="toggleFilter(this)">
+        Categoría <span class="icon-minus">−</span>
+      </div>
+      <div class="filter-body">
+        <label class="filter-option"><input type="checkbox" checked><span class="checkbox"></span>Ropa<span class="count">24</span></label>
+        <label class="filter-option"><input type="checkbox"><span class="checkbox"></span>Zapatos<span class="count">16</span></label>
+        <label class="filter-option"><input type="checkbox"><span class="checkbox"></span>Accesorios<span class="count">31</span></label>
+        <label class="filter-option"><input type="checkbox"><span class="checkbox"></span>Joyería<span class="count">12</span></label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-title" onclick="toggleFilter(this)">
+        Precio <span class="icon-minus">−</span>
+      </div>
+      <div class="filter-body">
+        <div class="price-range">
+          <input type="range" min="0" max="300" value="180" oninput="document.getElementById('priceVal').textContent = this.value + '€'">
+        </div>
+        <div class="price-values">
+          <span>0€</span>
+          <span id="priceVal">180€</span>
+          <span>300€</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-title" onclick="toggleFilter(this)">
+        Talla <span class="icon-minus">−</span>
+      </div>
+      <div class="filter-body">
+        <div class="size-grid">
+          <div class="size-chip">XS</div>
+          <div class="size-chip selected">S</div>
+          <div class="size-chip">M</div>
+          <div class="size-chip">L</div>
+          <div class="size-chip">XL</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-title" onclick="toggleFilter(this)">
+        Color <span class="icon-minus">−</span>
+      </div>
+      <div class="filter-body">
+        <div class="color-grid">
+          <div class="color-dot selected" style="background:#0D0B0D;"></div>
+          <div class="color-dot" style="background:#4A0E16;"></div>
+          <div class="color-dot" style="background:#8B0E1F;"></div>
+          <div class="color-dot" style="background:#B7935A;"></div>
+          <div class="color-dot" style="background:#6B4750;"></div>
+          <div class="color-dot" style="background:#EFE7DE; border-color: rgba(239,231,222,.3) !important;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-title" onclick="toggleFilter(this)">
+        Disponibilidad <span class="icon-minus">−</span>
+      </div>
+      <div class="filter-body">
+        <label class="filter-option"><input type="checkbox" checked><span class="checkbox"></span>En stock</label>
+        <label class="filter-option"><input type="checkbox"><span class="checkbox"></span>Incluir agotados</label>
+      </div>
+    </div>
+
+    <button class="btn-clear-filters" onclick="location.reload()">Limpiar todos los filtros</button>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="shop-main">
+    <button class="filter-toggle-mobile" onclick="openSidebar()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="1.5" fill="currentColor"/><circle cx="15" cy="12" r="1.5" fill="currentColor"/><circle cx="9" cy="18" r="1.5" fill="currentColor"/></svg>
+      Filtrar
+    </button>
+
+    <div class="toolbar">
+      <div>
+        <div class="results-count">Mostrando 1–12 de 83 productos</div>
+        <div class="active-filters">
+          <div class="active-chip">Ropa <button>✕</button></div>
+          <div class="active-chip">Talla S <button>✕</button></div>
+        </div>
+      </div>
+      <div class="sort-select">
+        Ordenar por
+        <select>
+          <option>Más recientes</option>
+          <option>Precio: menor a mayor</option>
+          <option>Precio: mayor a menor</option>
+          <option>Más vendidos</option>
+          <option>Mejor valorados</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="product-grid">
+
+      <div class="product-card">
+        <div class="product-media">
+          <span class="product-tag">Nuevo</span>
+          <button class="fav-btn" aria-label="Favorito"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+          <div class="quick-add">Añadir al carrito</div>
+        </div>
+        <div class="product-info">
+          <div class="p-cat">Vestidos</div>
+          <h4>Vestido Midnight Slit</h4>
+          <div class="price-row"><span class="price">89€</span></div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-media">
+          <span class="product-tag gold">-20%</span>
+          <button class="fav-btn" aria-label="Favorito"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+          <div class="quick-add">Añadir al carrito</div>
+        </div>
+        <div class="product-info">
+          <div class="p-cat">Zapatos</div>
+          <h4>Botines Sin Heel</h4>
+          <div class="price-row"><span class="price">76€</span><span class="price-old">95€</span></div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-media">
+          <button class="fav-btn active" aria-label="Favorito"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.8"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+          <div class="quick-add">Añadir al carrito</div>
+        </div>
+        <div class="product-info">
+          <div class="p-cat">Joyería</div>
+          <h4>Gargantilla Rouge Ronce</h4>
+          <div class="price-row"><span class="price">42€</span></div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-media">
+          <button class="fav-btn" aria-label="Favorito"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+          <div class="quick-add">Añadir al carrito</div>
+        </div>
+        <div class="product-info">
+          <div class="p-cat">Accesorios</div>
+          <h4>Guantes Velvet Sin</h4>
+          <div class="price-row"><span class="price">34€</span></div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-media">
+          <span class="product-tag outline">Últimas unidades</span>
+          <button class="fav-btn" aria-label="Favorito"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+          <div class="quick-add">Añadir al carrito</div>
+        </div>
+        <div class="product-info">
+          <div class="p-cat">Vestidos</div>
+          <h4>Vestido Belladonna Wrap</h4>
+          <div class="price-row"><span class="price">98€</span></div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-media">
+          <button class="fav-btn" aria-label="Favorito"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+          <div class="quick-add">Añadir al carrito</div>
+        </div>
+        <div class="product-info">
+          <div class="p-cat">Accesorios</div>
+          <h4>Clutch Belladonna</h4>
+          <div class="price-row"><span class="price">58€</span></div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-media">
+          <span class="product-tag">Nuevo</span>
+          <button class="fav-btn" aria-label="Favorito"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+          <div class="quick-add">Añadir al carrito</div>
+        </div>
+        <div class="product-info">
+          <div class="p-cat">Zapatos</div>
+          <h4>Sandalias Vér de Nuit</h4>
+          <div class="price-row"><span class="price">68€</span></div>
+        </div>
+      </div>
+
+      <div class="product-card sold-out">
+        <div class="product-media">
+          <span class="product-tag sold-out">Agotado</span>
+        </div>
+        <div class="product-info">
+          <div class="p-cat">Joyería</div>
+          <h4>Anillo Espina</h4>
+          <div class="price-row"><span class="price">29€</span></div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-media">
+          <button class="fav-btn" aria-label="Favorito"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+          <div class="quick-add">Añadir al carrito</div>
+        </div>
+        <div class="product-info">
+          <div class="p-cat">Ropa</div>
+          <h4>Blazer Noir Structuré</h4>
+          <div class="price-row"><span class="price">124€</span></div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-media">
+          <span class="product-tag gold">-15%</span>
+          <button class="fav-btn" aria-label="Favorito"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+          <div class="quick-add">Añadir al carrito</div>
+        </div>
+        <div class="product-info">
+          <div class="p-cat">Ropa</div>
+          <h4>Top Corset Sin</h4>
+          <div class="price-row"><span class="price">54€</span><span class="price-old">64€</span></div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-media">
+          <button class="fav-btn" aria-label="Favorito"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+          <div class="quick-add">Añadir al carrito</div>
+        </div>
+        <div class="product-info">
+          <div class="p-cat">Accesorios</div>
+          <h4>Cinturón Ceremonial</h4>
+          <div class="price-row"><span class="price">39€</span></div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-media">
+          <span class="product-tag">Nuevo</span>
+          <button class="fav-btn" aria-label="Favorito"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg></button>
+          <div class="quick-add">Añadir al carrito</div>
+        </div>
+        <div class="product-info">
+          <div class="p-cat">Zapatos</div>
+          <h4>Botas Pecado Alto</h4>
+          <div class="price-row"><span class="price">112€</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PAGINATION -->
+    <div class="pagination">
+      <button class="page-arrow" aria-label="Anterior">←</button>
+      <button class="page-btn active">1</button>
+      <button class="page-btn">2</button>
+      <button class="page-btn">3</button>
+      <span style="color:var(--smoke);">…</span>
+      <button class="page-btn">7</button>
+      <button class="page-arrow" aria-label="Siguiente">→</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 Sin & Silk. Todos los derechos reservados.</p>
+</footer>
+
+<script>
+  function toggleFilter(el){
+    el.parentElement.classList.toggle('collapsed');
+  }
+
+  function openSidebar(){
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('overlay').classList.add('open');
+  }
+  function closeSidebar(){
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('open');
+  }
+  document.getElementById('overlay').addEventListener('click', closeSidebar);
+
+  // Size chip select
+  document.querySelectorAll('.size-chip').forEach(chip => {
+    chip.addEventListener('click', () => chip.classList.toggle('selected'));
+  });
+
+  // Color dot select
+  document.querySelectorAll('.color-dot').forEach(dot => {
+    dot.addEventListener('click', () => dot.classList.toggle('selected'));
+  });
+
+  // Favorite toggle
+  document.querySelectorAll('.fav-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      btn.classList.toggle('active');
+    });
+  });
+</script>
+
+</body>
+</html>

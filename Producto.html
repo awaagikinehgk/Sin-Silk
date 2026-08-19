@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vestido Midnight Slit — Sin & Silk</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400;1,500;1,600&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --void:#0D0B0D;
+    --burdeos:#4A0E16;
+    --sin-red:#8B0E1F;
+    --gold:#B7935A;
+    --silk:#EFE7DE;
+    --smoke:#6B4750;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:var(--void);
+    color:var(--silk);
+    font-family:'Jost',sans-serif;
+    font-weight:300;
+    overflow-x:hidden;
+  }
+
+  .serif{font-family:'Cormorant Garamond',serif;}
+
+  .grain{
+    position:fixed; inset:0; pointer-events:none; z-index:50; opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay;
+  }
+
+  /* ---------- Header (same system) ---------- */
+  header{
+    position:sticky; top:0; z-index:40;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 5%;
+    background:rgba(13,11,13,.92);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(183,147,90,.15);
+  }
+
+  .logo{
+    font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:500;
+    font-size:1.5rem; letter-spacing:.03em; color:var(--silk); text-decoration:none;
+    display:flex; align-items:baseline; gap:6px;
+  }
+  .logo .amp{color:var(--gold); font-size:1.8rem; font-style:italic;}
+
+  nav ul{display:flex; list-style:none; gap:36px;}
+  nav a{
+    color:var(--silk); text-decoration:none; font-size:.72rem; letter-spacing:.18em;
+    text-transform:uppercase; opacity:.85; padding-bottom:4px; position:relative;
+  }
+  nav a::after{content:'';position:absolute;left:0;bottom:0;width:0;height:1px;background:var(--gold);transition:width .35s ease;}
+  nav a:hover{opacity:1;} nav a:hover::after{width:100%;}
+
+  .icons{display:flex; gap:22px; align-items:center;}
+  .icons button{background:none;border:none;color:var(--silk);cursor:pointer;opacity:.85;position:relative;}
+  .icons button:hover{opacity:1;}
+  .cart-count{
+    position:absolute; top:-8px; right:-10px; background:var(--sin-red); color:var(--silk);
+    font-size:.6rem; width:16px; height:16px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .menu-toggle{display:none;}
+
+  /* ---------- Breadcrumb ---------- */
+  .breadcrumb{
+    padding:22px 5% 0;
+    font-size:.72rem;
+    letter-spacing:.05em;
+    color:var(--smoke);
+  }
+  .breadcrumb a{color:var(--smoke); text-decoration:none; transition:color .3s ease;}
+  .breadcrumb a:hover{color:var(--gold);}
+  .breadcrumb .sep{margin:0 8px; opacity:.5;}
+  .breadcrumb .current{color:rgba(239,231,222,.7);}
+
+  /* ---------- Product layout ---------- */
+  .product-main{
+    display:grid;
+    grid-template-columns:1.1fr 1fr;
+    gap:64px;
+    padding:40px 5% 100px;
+    align-items:flex-start;
+  }
+
+  /* Gallery */
+  .gallery{
+    display:grid;
+    grid-template-columns:88px 1fr;
+    gap:18px;
+    position:sticky;
+    top:100px;
+  }
+
+  .thumbs{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  .thumb{
+    aspect-ratio:3/4;
+    background:linear-gradient(155deg, #211014 0%, #0D0B0D 70%);
+    cursor:pointer;
+    border:1px solid transparent;
+    opacity:.55;
+    transition:opacity .3s ease, border-color .3s ease;
+    position:relative;
+    overflow:hidden;
+  }
+  .thumb::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 30%, rgba(139,14,31,.14), transparent 65%);}
+  .thumb.active{opacity:1; border-color:var(--gold);}
+  .thumb:hover{opacity:1;}
+
+  .main-image{
+    aspect-ratio:3/4;
+    background:linear-gradient(160deg, #24121a 0%, #0D0B0D 65%);
+    position:relative;
+    overflow:hidden;
+    cursor:zoom-in;
+  }
+  .main-image::before{
+    content:'';
+    position:absolute; inset:0;
+    background-image:repeating-linear-gradient(115deg, rgba(183,147,90,.04) 0px, rgba(183,147,90,.04) 1px, transparent 1px, transparent 80px);
+  }
+  .main-image::after{
+    content:'';
+    position:absolute; inset:0;
+    background:radial-gradient(ellipse 65% 55% at 50% 32%, rgba(139,14,31,.22), transparent 65%);
+  }
+
+  .img-tag{
+    position:absolute; top:18px; left:18px; z-index:2;
+    background:var(--sin-red); color:var(--silk);
+    font-size:.62rem; letter-spacing:.14em; text-transform:uppercase;
+    padding:6px 12px;
+  }
+
+  .zoom-hint{
+    position:absolute; bottom:18px; right:18px; z-index:2;
+    font-size:.62rem; letter-spacing:.12em; text-transform:uppercase;
+    color:rgba(239,231,222,.55);
+    display:flex; align-items:center; gap:8px;
+  }
+
+  /* Product info */
+  .p-cat-label{
+    font-size:.68rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); margin-bottom:14px;
+  }
+
+  .product-title{
+    font-family:'Cormorant Garamond',serif;
+    font-weight:400;
+    font-size:clamp(2.2rem, 3vw, 2.8rem);
+    line-height:1.1;
+    margin-bottom:16px;
+  }
+
+  .rating-row{
+    display:flex; align-items:center; gap:10px; margin-bottom:24px;
+  }
+  .stars{color:var(--gold); font-size:.85rem; letter-spacing:2px;}
+  .rating-row span{font-size:.78rem; color:rgba(239,231,222,.55);}
+
+  .price-block{
+    display:flex; align-items:baseline; gap:14px; margin-bottom:30px;
+  }
+  .price-now{font-family:'Cormorant Garamond',serif; font-size:1.9rem; color:var(--silk);}
+  .price-was{font-size:1rem; color:var(--smoke); text-decoration:line-through;}
+  .price-save{
+    font-size:.65rem; letter-spacing:.1em; text-transform:uppercase;
+    background:rgba(183,147,90,.15); color:var(--gold);
+    padding:4px 9px;
+  }
+
+  .divider{height:1px; background:rgba(183,147,90,.15); margin:28px 0;}
+
+  .selector-label{
+    display:flex; justify-content:space-between; align-items:center;
+    font-size:.7rem; letter-spacing:.16em; text-transform:uppercase; color:rgba(239,231,222,.75);
+    margin-bottom:14px;
+  }
+  .size-guide-link{
+    color:var(--gold); text-decoration:underline; text-underline-offset:3px;
+    cursor:pointer; letter-spacing:.05em; text-transform:none; font-size:.75rem;
+    background:none; border:none; font-family:'Jost',sans-serif;
+  }
+
+  .size-row{display:flex; gap:10px; margin-bottom:30px; flex-wrap:wrap;}
+  .size-btn{
+    min-width:48px; height:48px; padding:0 6px;
+    border:1px solid rgba(239,231,222,.3);
+    background:none; color:var(--silk);
+    font-size:.78rem; letter-spacing:.05em;
+    cursor:pointer;
+    transition:border-color .3s ease, background .3s ease;
+  }
+  .size-btn:hover{border-color:var(--gold);}
+  .size-btn.selected{background:var(--gold); border-color:var(--gold); color:var(--void); font-weight:500;}
+  .size-btn.disabled{opacity:.3; text-decoration:line-through; cursor:not-allowed;}
+
+  .color-row{display:flex; gap:14px; margin-bottom:30px; align-items:center;}
+  .color-swatch{
+    width:30px; height:30px; border-radius:50%; cursor:pointer;
+    border:2px solid transparent; position:relative;
+    transition:border-color .3s ease;
+  }
+  .color-swatch.selected{border-color:var(--gold);}
+  .color-swatch.selected::after{
+    content:''; position:absolute; inset:-5px; border:1px solid rgba(183,147,90,.4); border-radius:50%;
+  }
+
+  .qty-cart-row{
+    display:flex; gap:16px; margin-bottom:20px;
+  }
+
+  .qty-selector{
+    display:flex; align-items:center;
+    border:1px solid rgba(239,231,222,.3);
+  }
+  .qty-selector button{
+    width:44px; height:56px; background:none; border:none; color:var(--silk);
+    font-size:1rem; cursor:pointer; transition:color .3s ease;
+  }
+  .qty-selector button:hover{color:var(--gold);}
+  .qty-selector span{width:36px; text-align:center; font-size:.9rem;}
+
+  .btn-add-cart{
+    flex:1;
+    background:var(--sin-red); border:1px solid var(--sin-red); color:var(--silk);
+    font-size:.75rem; letter-spacing:.16em; text-transform:uppercase;
+    cursor:pointer; transition:all .4s ease;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+  }
+  .btn-add-cart:hover{background:transparent; border-color:var(--gold);}
+
+  .btn-wishlist{
+    width:56px; height:56px;
+    border:1px solid rgba(239,231,222,.3);
+    background:none; color:var(--silk); cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:border-color .3s ease, color .3s ease;
+  }
+  .btn-wishlist:hover{border-color:var(--gold); color:var(--gold);}
+  .btn-wishlist.active{color:var(--sin-red); border-color:var(--sin-red);}
+
+  .btn-buy-now{
+    width:100%;
+    background:none; border:1px solid var(--gold); color:var(--gold);
+    font-size:.75rem; letter-spacing:.16em; text-transform:uppercase;
+    padding:17px 0; cursor:pointer; margin-bottom:30px;
+    transition:background .35s ease, color .35s ease;
+  }
+  .btn-buy-now:hover{background:var(--gold); color:var(--void);}
+
+  .trust-row{
+    display:flex; flex-direction:column; gap:14px; margin-bottom:8px;
+  }
+  .trust-item{
+    display:flex; align-items:center; gap:12px;
+    font-size:.78rem; color:rgba(239,231,222,.65);
+  }
+  .trust-item svg{color:var(--gold); flex-shrink:0;}
+
+  /* Accordion */
+  .accordion{margin-top:36px;}
+  .acc-item{border-top:1px solid rgba(183,147,90,.15);}
+  .acc-item:last-child{border-bottom:1px solid rgba(183,147,90,.15);}
+  .acc-header{
+    width:100%; background:none; border:none; color:var(--silk);
+    display:flex; justify-content:space-between; align-items:center;
+    padding:20px 0; cursor:pointer;
+    font-size:.78rem; letter-spacing:.1em; text-transform:uppercase;
+  }
+  .acc-header .icon-plus{transition:transform .3s ease; color:var(--gold); font-size:1.1rem;}
+  .acc-item.open .icon-plus{transform:rotate(45deg);}
+  .acc-body{
+    max-height:0; overflow:hidden; transition:max-height .4s ease;
+  }
+  .acc-item.open .acc-body{max-height:240px;}
+  .acc-body-inner{
+    padding-bottom:22px; font-size:.85rem; line-height:1.8; color:rgba(239,231,222,.62);
+  }
+
+  /* ---------- Related products ---------- */
+  .related{padding:100px 5% 120px; background:#0a0809;}
+  .section-head{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    margin-bottom:56px; flex-wrap:wrap; gap:24px;
+  }
+  .eyebrow{
+    display:flex; align-items:center; gap:14px;
+    font-size:.7rem; letter-spacing:.28em; text-transform:uppercase; color:var(--gold); margin-bottom:14px;
+  }
+  .eyebrow::before{content:'';width:36px;height:1px;background:var(--gold);}
+  .section-head h2{
+    font-family:'Cormorant Garamond',serif; font-weight:400; font-style:italic;
+    font-size:clamp(2rem, 3.4vw, 2.6rem); color:var(--silk);
+  }
+
+  .product-grid{
+    display:grid; grid-template-columns:repeat(4, 1fr); gap:32px;
+  }
+  .product-card{cursor:pointer;}
+  .product-media{
+    position:relative; aspect-ratio:3/4;
+    background:linear-gradient(155deg, #211014 0%, #0D0B0D 70%);
+    overflow:hidden; margin-bottom:16px;
+  }
+  .product-media::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 30%, rgba(139,14,31,.16), transparent 65%);}
+  .product-info .p-cat{font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:var(--smoke);margin-bottom:5px;}
+  .product-info h4{font-family:'Cormorant Garamond',serif;font-weight:500;font-size:1.05rem;color:var(--silk);margin-bottom:6px;}
+  .price-row{font-size:.82rem; color:var(--silk);}
+
+  footer{padding:70px 5% 30px; background:var(--void); text-align:center; border-top:1px solid rgba(183,147,90,.12);}
+  footer p{color:rgba(239,231,222,.4); font-size:.72rem;}
+
+  /* ---------- Mobile ---------- */
+  @media (max-width: 960px){
+    nav ul, .icons .search-btn{display:none;}
+    .menu-toggle{display:block; background:none; border:none; color:var(--silk); cursor:pointer;}
+    .product-main{grid-template-columns:1fr; gap:36px; padding:24px 6% 70px;}
+    .gallery{position:static; grid-template-columns:1fr; }
+    .thumbs{flex-direction:row; overflow-x:auto;}
+    .thumb{min-width:64px;}
+    .product-grid{grid-template-columns:repeat(2, 1fr); gap:22px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<!-- HEADER -->
+<header>
+  <a href="index.html" class="logo">Sin <span class="amp">&</span> Silk</a>
+  <nav>
+    <ul>
+      <li><a href="index.html">Novedades</a></li>
+      <li><a href="catalogo.html">Ropa</a></li>
+      <li><a href="catalogo.html">Zapatos</a></li>
+      <li><a href="catalogo.html">Accesorios</a></li>
+      <li><a href="catalogo.html">Colección</a></li>
+    </ul>
+  </nav>
+  <div class="icons">
+    <button class="search-btn" aria-label="Buscar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </button>
+    <button aria-label="Cuenta">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    </button>
+    <button aria-label="Favoritos">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+    </button>
+    <button aria-label="Carrito">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <span class="cart-count">2</span>
+    </button>
+    <button class="menu-toggle" aria-label="Menú">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb">
+  <a href="index.html">Inicio</a><span class="sep">/</span><a href="catalogo.html">Ropa</a><span class="sep">/</span><span class="current">Vestido Midnight Slit</span>
+</div>
+
+<!-- PRODUCT MAIN -->
+<div class="product-main">
+  <!-- Gallery -->
+  <div class="gallery">
+    <div class="thumbs">
+      <div class="thumb active" data-img="1"></div>
+      <div class="thumb" data-img="2"></div>
+      <div class="thumb" data-img="3"></div>
+      <div class="thumb" data-img="4"></div>
+    </div>
+    <div class="main-image" id="mainImage">
+      <span class="img-tag">Nuevo</span>
+      <div class="zoom-hint">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Zoom
+      </div>
+    </div>
+  </div>
+
+  <!-- Info -->
+  <div class="product-info-panel">
+    <div class="p-cat-label">Vestidos · Sin & Silk</div>
+    <h1 class="product-title">Vestido Midnight Slit</h1>
+
+    <div class="rating-row">
+      <span class="stars">★★★★★</span>
+      <span>4.8 · 126 reseñas</span>
+    </div>
+
+    <div class="price-block">
+      <span class="price-now">89€</span>
+      <span class="price-was">112€</span>
+      <span class="price-save">Ahorras 20%</span>
+    </div>
+
+    <p style="color:rgba(239,231,222,.65); font-size:.9rem; line-height:1.8; max-width:440px;">
+      Corte al bies en satén negro con abertura lateral pronunciada. Escote asimétrico y espalda semidescubierta. La pieza definitiva para quien entra en la sala y decide quedarse toda la noche.
+    </p>
+
+    <div class="divider"></div>
+
+    <div class="selector-label">
+      <span>Talla</span>
+      <button class="size-guide-link" onclick="document.getElementById('sizeModal').classList.add('open')">Guía de tallas</button>
+    </div>
+    <div class="size-row">
+      <button class="size-btn">XS</button>
+      <button class="size-btn selected">S</button>
+      <button class="size-btn">M</button>
+      <button class="size-btn">L</button>
+      <button class="size-btn disabled">XL</button>
+    </div>
+
+    <div class="selector-label"><span>Color</span></div>
+    <div class="color-row">
+      <div class="color-swatch selected" style="background:#0D0B0D;"></div>
+      <div class="color-swatch" style="background:#4A0E16;"></div>
+      <div class="color-swatch" style="background:#6B4750;"></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="qty-cart-row">
+      <div class="qty-selector">
+        <button onclick="changeQty(-1)">−</button>
+        <span id="qtyValue">1</span>
+        <button onclick="changeQty(1)">+</button>
+      </div>
+      <button class="btn-add-cart" onclick="addToCart(this)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        Añadir al carrito
+      </button>
+      <button class="btn-wishlist" onclick="this.classList.toggle('active')" aria-label="Añadir a favoritos">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+      </button>
+    </div>
+
+    <button class="btn-buy-now">Comprar ahora</button>
+
+    <div class="trust-row">
+      <div class="trust-item">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><path d="M16 8h4l3 3v5h-7V8Z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        Envío gratis a partir de 60€
+      </div>
+      <div class="trust-item">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        Devoluciones gratuitas en 30 días
+      </div>
+      <div class="trust-item">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>
+        Pago 100% seguro
+      </div>
+    </div>
+
+    <!-- Accordion -->
+    <div class="accordion">
+      <div class="acc-item open">
+        <button class="acc-header" onclick="toggleAcc(this)">
+          Detalles y composición
+          <span class="icon-plus">+</span>
+        </button>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+            96% poliéster satinado, 4% elastano. Forro interior en viscosa. Cierre invisible lateral. Largo midi. Lavado en seco recomendado.
+          </div>
+        </div>
+      </div>
+      <div class="acc-item">
+        <button class="acc-header" onclick="toggleAcc(this)">
+          Envíos y devoluciones
+          <span class="icon-plus">+</span>
+        </button>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+            Envío estándar 3-5 días laborables. Envío exprés 24-48h disponible en checkout. Devoluciones gratuitas dentro de los 30 días posteriores a la recepción.
+          </div>
+        </div>
+      </div>
+      <div class="acc-item">
+        <button class="acc-header" onclick="toggleAcc(this)">
+          Reseñas (126)
+          <span class="icon-plus">+</span>
+        </button>
+        <div class="acc-body">
+          <div class="acc-body-inner">
+            "El corte es espectacular, se ajusta perfecto." — Valentina R.<br><br>
+            "Calidad de la tela mejor de lo esperado." — Carla M.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RELATED PRODUCTS -->
+<section class="related">
+  <div class="section-head">
+    <div>
+      <div class="eyebrow">A juego</div>
+      <h2>Completa el look</h2>
+    </div>
+  </div>
+  <div class="product-grid">
+    <div class="product-card">
+      <div class="product-media"></div>
+      <div class="product-info">
+        <div class="p-cat">Zapatos</div>
+        <h4>Botines Sin Heel</h4>
+        <div class="price-row">76€</div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-media"></div>
+      <div class="product-info">
+        <div class="p-cat">Joyería</div>
+        <h4>Gargantilla Rouge Ronce</h4>
+        <div class="price-row">42€</div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-media"></div>
+      <div class="product-info">
+        <div class="p-cat">Accesorios</div>
+        <h4>Clutch Belladonna</h4>
+        <div class="price-row">58€</div>
+      </div>
+    </div>
+    <div class="product-card">
+      <div class="product-media"></div>
+      <div class="product-info">
+        <div class="p-cat">Accesorios</div>
+        <h4>Guantes Velvet Sin</h4>
+        <div class="price-row">34€</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 Sin & Silk. Todos los derechos reservados.</p>
+</footer>
+
+<script>
+  // Size selection
+  document.querySelectorAll('.size-btn:not(.disabled)').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+  });
+
+  // Color selection
+  document.querySelectorAll('.color-swatch').forEach(sw => {
+    sw.addEventListener('click', () => {
+      document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+      sw.classList.add('selected');
+    });
+  });
+
+  // Thumbnail gallery
+  document.querySelectorAll('.thumb').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.thumb').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+    });
+  });
+
+  // Quantity
+  let qty = 1;
+  function changeQty(delta){
+    qty = Math.max(1, qty + delta);
+    document.getElementById('qtyValue').textContent = qty;
+  }
+
+  // Add to cart feedback
+  function addToCart(btn){
+    const original = btn.innerHTML;
+    btn.innerHTML = 'Añadido ✓';
+    btn.style.borderColor = 'var(--gold)';
+    setTimeout(() => { btn.innerHTML = original; }, 1800);
+  }
+
+  // Accordion
+  function toggleAcc(header){
+    const item = header.parentElement;
+    const wasOpen = item.classList.contains('open');
+    document.querySelectorAll('.acc-item').forEach(i => i.classList.remove('open'));
+    if(!wasOpen) item.classList.add('open');
+  }
+</script>
+
+</body>
+</html>
